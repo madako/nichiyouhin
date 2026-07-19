@@ -8,6 +8,9 @@ function esc(s) {
   d.textContent = s == null ? '' : String(s);
   return d.innerHTML;
 }
+function escAttr(s) {
+  return esc(s).replace(/"/g, '&quot;');
+}
 function photoUrl(p) {
   return p.photoId ? 'https://drive.google.com/thumbnail?id=' + p.photoId + '&sz=w400' : '';
 }
@@ -101,15 +104,15 @@ function renderForm() {
   var isNew = !p.id;
   content().innerHTML =
     '<form onsubmit="return submitForm()">' +
-    '<label>商品名</label><input id="f-name" value="' + esc(p.name || '') + '" required>' +
-    '<label>メーカー</label><input id="f-maker" value="' + esc(p.maker || '') + '">' +
-    '<label>カテゴリ</label><input id="f-category" value="' + esc(p.category || '') + '" list="cats">' +
+    '<label>商品名</label><input id="f-name" value="' + escAttr(p.name || '') + '" required>' +
+    '<label>メーカー</label><input id="f-maker" value="' + escAttr(p.maker || '') + '">' +
+    '<label>カテゴリ</label><input id="f-category" value="' + escAttr(p.category || '') + '" list="cats">' +
     '<datalist id="cats">' +
     products.map(function (x) { return x.category; })
       .filter(function (c, i, a) { return a.indexOf(c) === i; })
-      .map(function (c) { return '<option value="' + esc(c) + '">'; }).join('') +
+      .map(function (c) { return '<option value="' + escAttr(c) + '">'; }).join('') +
     '</datalist>' +
-    '<label>容量・備考</label><input id="f-note" value="' + esc(p.note || '') + '">' +
+    '<label>容量・備考</label><input id="f-note" value="' + escAttr(p.note || '') + '">' +
     '<label>在庫数</label><input id="f-stock" type="number" min="0" value="' + (p.stock != null ? p.stock : 1) + '">' +
     '<label>発注基準（この数以下で買い物リストへ）</label><input id="f-threshold" type="number" min="0" value="' + (p.threshold != null ? p.threshold : 1) + '">' +
     '<label>写真（変更する場合のみ選択）</label><input id="f-photo" type="file" accept="image/*" capture="environment">' +
