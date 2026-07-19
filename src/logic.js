@@ -9,6 +9,16 @@ function buildShoppingList(products) {
   return products.filter(function (p) { return p.stock <= p.threshold; });
 }
 
+function shouldSkipReminder(historyTimestamps, now) {
+  var windowStart = new Date(now.getFullYear(), now.getMonth(), 17, 0, 0, 0);
+  return historyTimestamps.some(function (t) { return t >= windowStart && t <= now; });
+}
+
 if (typeof module !== 'undefined') {
-  module.exports = { HEADER: HEADER, validateHeader: validateHeader, buildShoppingList: buildShoppingList };
+  module.exports = {
+    HEADER: HEADER,
+    validateHeader: validateHeader,
+    buildShoppingList: buildShoppingList,
+    shouldSkipReminder: shouldSkipReminder
+  };
 }
