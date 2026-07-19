@@ -38,13 +38,20 @@ function initSetup() {
     PDF_FOLDER_ID: pdfFolder.getId()
   });
 
+  recreateTriggers();
+
+  Logger.log('セットアップ完了');
+  Logger.log('スプレッドシート: ' + ss.getUrl());
+  Logger.log('通知はLINEに届きます（LINE_CHANNEL_TOKENの設定が必要）。');
+}
+
+// トリガーをすべて削除して作り直す。appsscript.jsonのタイムゾーン修正後や、
+// トリガー時刻を変更したいときにGASエディタから手動実行する。
+function recreateTriggers() {
+  ScriptApp.getProjectTriggers().forEach(function (t) { ScriptApp.deleteTrigger(t); });
   ScriptApp.newTrigger('reminderTrigger').timeBased().onMonthDay(17).atHour(19).create();
   ScriptApp.newTrigger('reminderTrigger').timeBased().onMonthDay(18).atHour(19).create();
   ScriptApp.newTrigger('reminderTrigger').timeBased().onMonthDay(19).atHour(6).create();
   ScriptApp.newTrigger('monthlyPdfTrigger').timeBased().onMonthDay(19).atHour(7).create();
   ScriptApp.newTrigger('predictionTrigger').timeBased().everyDays(1).atHour(8).create();
-
-  Logger.log('セットアップ完了');
-  Logger.log('スプレッドシート: ' + ss.getUrl());
-  Logger.log('通知はGmail（' + Session.getEffectiveUser().getEmail() + '）に届きます。');
 }
