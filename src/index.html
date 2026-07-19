@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <?!= include('style'); ?>
+</head>
+<body>
+  <nav>
+    <button class="tab active" data-view="stock" onclick="setView('stock')">在庫一覧</button>
+    <button class="tab" data-view="list" onclick="setView('list')">🛒買い物リスト</button>
+    <button class="tab" data-view="edit" onclick="setView('edit')">商品管理</button>
+  </nav>
+  <main id="content"><p class="center">読み込み中...</p></main>
+  <?!= include('app'); ?>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<style>
+* { box-sizing: border-box; margin: 0; }
+body { font-family: sans-serif; background: #f5f5f5; padding-bottom: 40px; }
+nav { display: flex; position: sticky; top: 0; background: #fff; border-bottom: 2px solid #ddd; z-index: 10; }
+.tab { flex: 1; padding: 14px 4px; border: none; background: none; font-size: 14px; color: #666; }
+.tab.active { color: #1a73e8; border-bottom: 3px solid #1a73e8; font-weight: bold; }
+main { padding: 12px; }
+h2 { font-size: 14px; color: #888; margin: 16px 0 8px; }
+.center { text-align: center; padding: 24px; color: #888; }
+.error { color: #c00; padding: 12px; }
+.card { display: flex; align-items: center; background: #fff; border-radius: 10px; padding: 10px; margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.card.low { background: #fff0f0; border: 1px solid #f5b5b5; }
+.card img, .noimg { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; background: #eee; flex-shrink: 0; }
+.info { flex: 1; min-width: 0; padding: 0 10px; }
+.name { font-size: 15px; font-weight: bold; }
+.meta { font-size: 12px; color: #888; }
+.badge { color: #c00; font-size: 12px; }
+.ctrl { display: flex; align-items: center; gap: 6px; }
+.ctrl button { width: 44px; height: 44px; font-size: 22px; border: 1px solid #ccc; border-radius: 50%; background: #fff; }
+.stock { min-width: 28px; text-align: center; font-size: 18px; font-weight: bold; }
+.bigcard { background: #fff; border-radius: 10px; padding: 14px; margin-bottom: 10px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.bigcard img { max-width: 70%; max-height: 220px; border-radius: 8px; }
+form label { display: block; margin: 12px 0 4px; font-size: 13px; color: #555; }
+form input, form select { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; }
+.btn { display: inline-block; width: 100%; padding: 14px; margin-top: 16px; font-size: 16px; border: none; border-radius: 8px; background: #1a73e8; color: #fff; }
+.btn.danger { background: #d33; }
+.btn.plain { background: #eee; color: #333; }
+.editrow { display: flex; justify-content: space-between; align-items: center; background: #fff; border-radius: 8px; padding: 12px; margin-bottom: 6px; }
+</style>

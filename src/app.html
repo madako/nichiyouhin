@@ -1,0 +1,165 @@
+<script>
+var products = [];
+var view = 'stock';
+var editing = null; // 編集中の商品 or 新規なら {}
+
+function esc(s) {
+  var d = document.createElement('div');
+  d.textContent = s == null ? '' : String(s);
+  return d.innerHTML;
+}
+function photoUrl(p) {
+  return p.photoId ? 'https://drive.google.com/thumbnail?id=' + p.photoId + '&sz=w400' : '';
+}
+function content() { return document.getElementById('content'); }
+
+function load() {
+  content().innerHTML = '<p class="center">読み込み中...</p>';
+  google.script.run
+    .withSuccessHandler(function (data) { products = data; render(); })
+    .withFailureHandler(showError)
+    .apiGetData();
+}
+function showError(err) {
+  content().innerHTML = '<p class="error">エラー: ' + esc(err && err.message ? err.message : err) +
+    '</p><button class="btn plain" onclick="load()">再読み込み</button>';
+}
+function setView(v) {
+  view = v;
+  editing = null;
+  document.querySelectorAll('.tab').forEach(function (t) {
+    t.classList.toggle('active', t.dataset.view === v);
+  });
+  render();
+}
+function render() {
+  if (view === 'stock') renderStock();
+  else if (view === 'list') renderList();
+  else renderEdit();
+}
+
+function renderStock() {
+  var cats = [];
+  products.forEach(function (p) { if (cats.indexOf(p.category) < 0) cats.push(p.category); });
+  var html = '';
+  cats.forEach(function (c) {
+    html += '<h2>' + esc(c) + '</h2>';
+    products.filter(function (p) { return p.category === c; }).forEach(function (p) {
+      var low = p.stock <= p.threshold;
+      html += '<div class="card' + (low ? ' low' : '') + '">' +
+        (photoUrl(p) ? '<img src="' + photoUrl(p) + '">' : '<div class="noimg"></div>') +
+        '<div class="info"><div class="name">' + esc(p.name) +
+        (low ? ' <span class="badge">🛒買い時</span>' : '') + '</div>' +
+        '<div class="meta">' + esc(p.maker) + ' ' + esc(p.note) + '</div></div>' +
+        '<div class="ctrl"><button onclick="change(' + p.id + ',-1)">−</button>' +
+        '<span class="stock">' + p.stock + '</span>' +
+        '<button onclick="change(' + p.id + ',1)">＋</button></div></div>';
+    });
+  });
+  content().innerHTML = html || '<p class="center">商品がありません</p>';
+}
+
+function change(id, delta) {
+  google.script.run
+    .withSuccessHandler(function (after) {
+      var p = products.find(function (x) { return x.id === id; });
+      p.stock = after;
+      render();
+    })
+    .withFailureHandler(function (e) { showError(e); load(); })
+    .apiChangeStock(id, delta);
+}
+
+function renderList() {
+  var items = products.filter(function (p) { return p.stock <= p.threshold; });
+  if (items.length === 0) {
+    content().innerHTML = '<p class="center">買い時の商品はありません 🎉</p>';
+    return;
+  }
+  content().innerHTML = items.map(function (p) {
+    return '<div class="bigcard">' +
+      (photoUrl(p) ? '<img src="' + photoUrl(p) + '">' : '') +
+      '<div class="name">' + esc(p.name) + '</div>' +
+      '<div class="meta">' + esc(p.maker) + ' ' + esc(p.note) + '</div>' +
+      '<div class="meta">在庫 ' + p.stock + '（基準 ' + p.threshold + '）</div></div>';
+  }).join('');
+}
+
+function renderEdit() {
+  if (editing) { renderForm(); return; }
+  var html = '<button class="btn" onclick="editing={};render()">＋ 新しい商品を追加</button>';
+  html += products.map(function (p) {
+    return '<div class="editrow"><span>' + esc(p.name) + '</span>' +
+      '<button class="btn plain" style="width:auto;margin:0;padding:8px 16px" ' +
+      'onclick="editing=products.find(function(x){return x.id===' + p.id + '});render()">編集</button></div>';
+  }).join('');
+  content().innerHTML = html;
+}
+
+function renderForm() {
+  var p = editing;
+  var isNew = !p.id;
+  content().innerHTML =
+    '<form onsubmit="return submitForm()">' +
+    '<label>商品名</label><input id="f-name" value="' + esc(p.name || '') + '" required>' +
+    '<label>メーカー</label><input id="f-maker" value="' + esc(p.maker || '') + '">' +
+    '<label>カテゴリ</label><input id="f-category" value="' + esc(p.category || '') + '" list="cats">' +
+    '<datalist id="cats">' +
+    products.map(function (x) { return x.category; })
+      .filter(function (c, i, a) { return a.indexOf(c) === i; })
+      .map(function (c) { return '<option value="' + esc(c) + '">'; }).join('') +
+    '</datalist>' +
+    '<label>容量・備考</label><input id="f-note" value="' + esc(p.note || '') + '">' +
+    '<label>在庫数</label><input id="f-stock" type="number" min="0" value="' + (p.stock != null ? p.stock : 1) + '">' +
+    '<label>発注基準（この数以下で買い物リストへ）</label><input id="f-threshold" type="number" min="0" value="' + (p.threshold != null ? p.threshold : 1) + '">' +
+    '<label>写真（変更する場合のみ選択）</label><input id="f-photo" type="file" accept="image/*" capture="environment">' +
+    '<button class="btn" type="submit">保存</button>' +
+    (isNew ? '' : '<button class="btn danger" type="button" onclick="delProduct(' + p.id + ')">この商品を削除</button>') +
+    '<button class="btn plain" type="button" onclick="editing=null;render()">キャンセル</button>' +
+    '</form>';
+}
+
+function submitForm() {
+  var p = {
+    id: editing.id || null,
+    name: document.getElementById('f-name').value.trim(),
+    maker: document.getElementById('f-maker').value.trim(),
+    category: document.getElementById('f-category').value.trim() || 'その他',
+    note: document.getElementById('f-note').value.trim(),
+    stock: Number(document.getElementById('f-stock').value),
+    threshold: Number(document.getElementById('f-threshold').value),
+    photoId: editing.photoId || ''
+  };
+  var fileInput = document.getElementById('f-photo');
+  content().innerHTML = '<p class="center">保存中...</p>';
+  if (fileInput.files.length > 0) {
+    var file = fileInput.files[0];
+    var reader = new FileReader();
+    reader.onload = function () {
+      var base64 = reader.result.split(',')[1];
+      saveProduct(p, { base64: base64, mimeType: file.type });
+    };
+    reader.readAsDataURL(file);
+  } else {
+    saveProduct(p, null);
+  }
+  return false;
+}
+
+function saveProduct(p, photo) {
+  google.script.run
+    .withSuccessHandler(function () { editing = null; load(); })
+    .withFailureHandler(function (e) { showError(e); })
+    .apiSaveProduct(p, photo);
+}
+
+function delProduct(id) {
+  if (!confirm('この商品を削除しますか？')) return;
+  google.script.run
+    .withSuccessHandler(function () { editing = null; load(); })
+    .withFailureHandler(showError)
+    .apiDeleteProduct(id);
+}
+
+window.addEventListener('load', load);
+</script>
