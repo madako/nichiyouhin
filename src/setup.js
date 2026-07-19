@@ -31,13 +31,11 @@ function initSetup() {
   var root = DriveApp.createFolder('日用品在庫管理');
   var photoFolder = root.createFolder('写真');
   var pdfFolder = root.createFolder('買い物リスト');
-  var topic = 'nichiyouhin-' + Utilities.getUuid();
 
   props_().setProperties({
     SPREADSHEET_ID: ss.getId(),
     PHOTO_FOLDER_ID: photoFolder.getId(),
-    PDF_FOLDER_ID: pdfFolder.getId(),
-    NTFY_TOPIC: topic
+    PDF_FOLDER_ID: pdfFolder.getId()
   });
 
   ScriptApp.newTrigger('reminderTrigger').timeBased().onMonthDay(17).atHour(19).create();
@@ -48,5 +46,5 @@ function initSetup() {
 
   Logger.log('セットアップ完了');
   Logger.log('スプレッドシート: ' + ss.getUrl());
-  Logger.log('ntfyトピック名（スマホのntfyアプリで購読する）: ' + topic);
+  Logger.log('通知はGmail（' + Session.getEffectiveUser().getEmail() + '）に届きます。');
 }
