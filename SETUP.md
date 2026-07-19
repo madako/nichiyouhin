@@ -24,9 +24,14 @@
 - 表示されたURLをスマホに送り、Chromeで開いてGoogleログイン
 - Chromeメニュー「ホーム画面に追加」でアイコン化
 
-## 4. 通知の動作確認
-- 通知はGoogleアカウントのGmail宛にメールで届く（追加の設定不要）
-- GASエディタで関数 `testNotification` を実行 → スマホのGmailアプリに通知が届けばOK
+## 4. LINE通知の設定
+- https://www.lineofficialaccount.com/ で無料のLINE公式アカウントを新規作成
+- 作成後の管理画面（LINE Official Account Manager）→「設定」→「Messaging API」を有効化
+- https://developers.line.biz/console/ を開き、対応するチャネル（プロバイダー）を選択
+- 「Messaging API設定」タブ→「チャネルアクセストークン（長期）」を発行してコピー
+- GASエディタ→歯車アイコン「プロジェクトの設定」→「スクリプト プロパティ」で `LINE_CHANNEL_TOKEN` を追加し、コピーしたトークンを貼り付け
+- スマホのLINEアプリで、作成した公式アカウントを友だち追加（QRコードは管理画面の「設定」→「応答設定」あたりで確認可能）
+- GASエディタで関数 `testNotification` を実行 → LINEにメッセージが届けばOK
 
 ## 5. 写真の登録
 - Webアプリの「商品管理」タブ → 各商品の「編集」→ 写真を選択して保存
@@ -38,7 +43,7 @@
 1. [ ] 在庫の＋/−がスプレッドシート「商品」に反映され、「在庫履歴」に行が増える
 2. [ ] 在庫を発注基準以下にすると「買い物リスト」タブに写真付きで表示される
 3. [ ] GASエディタで `generateShoppingListPdf` を実行するとドライブ「日用品在庫管理/買い物リスト」にPDFができ、日本語・写真が正しく表示されている
-4. [ ] `testNotification` の通知メールがスマホのGmailに届く
+4. [ ] `testNotification` の通知がスマホのLINEに届く
 5. [ ] 在庫を1件修正してから `reminderTrigger` を手動実行しても通知が来ない（17〜19日の期間中のみ検証可能。期間外は「在庫履歴」に手動で当月17日以降の日時の行を足して検証する）
 
 ## 補足

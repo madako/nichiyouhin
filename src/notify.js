@@ -1,5 +1,13 @@
 function sendNotification_(subject, message) {
-  MailApp.sendEmail(Session.getEffectiveUser().getEmail(), subject, message);
+  var token = props_().getProperty('LINE_CHANNEL_TOKEN');
+  UrlFetchApp.fetch('https://api.line.me/v2/bot/message/broadcast', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + token },
+    payload: JSON.stringify({
+      messages: [{ type: 'text', text: subject + '\n' + message }]
+    })
+  });
 }
 
 // 毎月17日19時台・18日19時台・19日6時台に実行
@@ -25,5 +33,5 @@ function predictionTrigger() {
 
 // SETUP時の動作確認用。GASエディタから手動実行する。
 function testNotification() {
-  sendNotification_('【日用品】テスト通知です', 'このメールが届いていれば設定成功です！');
+  sendNotification_('【日用品】テスト通知です', 'このメッセージが届いていれば設定成功です！');
 }
