@@ -14,11 +14,24 @@ function shouldSkipReminder(historyTimestamps, now) {
   return historyTimestamps.some(function (t) { return t >= windowStart && t <= now; });
 }
 
+function estimateDaysUntilBelowThreshold(history, product, now) {
+  var dec = history.filter(function (h) { return h.after < h.before; });
+  if (dec.length < 2) return null;
+  var elapsedDays = (now - dec[0].date) / 86400000;
+  if (elapsedDays < 14) return null;
+  var totalDec = dec.reduce(function (s, h) { return s + (h.before - h.after); }, 0);
+  var perDay = totalDec / elapsedDays;
+  if (perDay <= 0) return null;
+  if (product.stock <= product.threshold) return 0;
+  return (product.stock - product.threshold) / perDay;
+}
+
 if (typeof module !== 'undefined') {
   module.exports = {
     HEADER: HEADER,
     validateHeader: validateHeader,
     buildShoppingList: buildShoppingList,
-    shouldSkipReminder: shouldSkipReminder
+    shouldSkipReminder: shouldSkipReminder,
+    estimateDaysUntilBelowThreshold: estimateDaysUntilBelowThreshold
   };
 }

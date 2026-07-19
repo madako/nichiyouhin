@@ -40,3 +40,49 @@ test('shouldSkipReminder: 先月17日以降の履歴は対象外', () => {
 test('shouldSkipReminder: 履歴が空ならfalse', () => {
   assert.strictEqual(shouldSkipReminder([], new Date(2026, 7, 17, 19, 0)), false);
 });
+
+const { estimateDaysUntilBelowThreshold } = require('../src/logic.js');
+
+test('予測: 減少イベントが2件未満ならnull', () => {
+  const history = [{ date: new Date(2026, 0, 1), before: 3, after: 2 }];
+  const p = { stock: 2, threshold: 1 };
+  assert.strictEqual(estimateDaysUntilBelowThreshold(history, p, new Date(2026, 1, 1)), null);
+});
+
+test('予測: 観測期間14日未満ならnull', () => {
+  const history = [
+    { date: new Date(2026, 0, 1), before: 3, after: 2 },
+    { date: new Date(2026, 0, 5), before: 2, after: 1 },
+  ];
+  const p = { stock: 1, threshold: 0 };
+  assert.strictEqual(estimateDaysUntilBelowThreshold(history, p, new Date(2026, 0, 10)), null);
+});
+
+test('予測: すでに基準以下なら0', () => {
+  const history = [
+    { date: new Date(2026, 0, 1), before: 3, after: 2 },
+    { date: new Date(2026, 0, 20), before: 2, after: 1 },
+  ];
+  const p = { stock: 1, threshold: 1 };
+  assert.strictEqual(estimateDaysUntilBelowThreshold(history, p, new Date(2026, 1, 1)), 0);
+});
+
+test('予測: 消費ペースから残日数を推定する', () => {
+  // 30日で2個減 → 0.0667個/日。stock 3, threshold 1 → 残2個 ÷ 0.0667 = 30日
+  const history = [
+    { date: new Date(2026, 0, 1), before: 5, after: 4 },
+    { date: new Date(2026, 0, 16), before: 4, after: 3 },
+  ];
+  const p = { stock: 3, threshold: 1 };
+  const days = estimateDaysUntilBelowThreshold(history, p, new Date(2026, 0, 31));
+  assert.ok(Math.abs(days - 30) < 0.01, 'expected ~30, got ' + days);
+});
+
+test('予測: 増加のみ（買い足しだけ）の履歴はnull', () => {
+  const history = [
+    { date: new Date(2026, 0, 1), before: 1, after: 2 },
+    { date: new Date(2026, 0, 20), before: 2, after: 3 },
+  ];
+  const p = { stock: 3, threshold: 1 };
+  assert.strictEqual(estimateDaysUntilBelowThreshold(history, p, new Date(2026, 1, 1)), null);
+});
