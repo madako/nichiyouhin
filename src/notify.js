@@ -1,10 +1,14 @@
 function sendNtfy_(message) {
   var topic = props_().getProperty('NTFY_TOPIC');
-  UrlFetchApp.fetch('https://ntfy.sh/' + encodeURIComponent(topic), {
+  var token = props_().getProperty('NTFY_TOKEN');
+  var options = {
     method: 'post',
     payload: message,
     contentType: 'text/plain; charset=utf-8'
-  });
+  };
+  // アカウントのアクセストークンで認証すると、GASの共有IPではなくアカウント単位の送信枠になる
+  if (token) options.headers = { Authorization: 'Bearer ' + token };
+  UrlFetchApp.fetch('https://ntfy.sh/' + encodeURIComponent(topic), options);
 }
 
 // 毎月17日19時台・18日19時台・19日6時台に実行
